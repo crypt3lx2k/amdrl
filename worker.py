@@ -96,7 +96,6 @@ def main (FLAGS):
                 break
 
             special_episode = is_chief and ((1+episodes) % 10 == 0)
-            special_episode = False
 
             a = (epsilon_stop - epsilon_start)/epsilon_steps
             b = epsilon_start

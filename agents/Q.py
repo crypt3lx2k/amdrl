@@ -26,19 +26,6 @@ class QAgent (base.Agent):
              'actions' : actions}
         )
 
-        # print (
-        #     'loss={:04.2f} eps={:04.2f} '
-        #     'mean={:04.2f} std={:04.2f} '
-        #     'batch_size={} id={}'.format (
-        #         loss,
-        #         self.policy.epsilon,
-        #         targets.mean(),
-        #         targets.std(),
-        #         len(states),
-        #         self.model.server.target
-        #     )
-        # )
-
         return loss
 
 class LearningAgent (QAgent):

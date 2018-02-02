@@ -126,7 +126,7 @@ class Model (base.TFModel):
         loss_fn = make_loss_fn(loss_terms[loss_type])
 
         # Build graph
-        self.build(input_fn, make_inference_fn(body_fn, output_config), loss_fn)
+        self.build(input_fn=input_fn, inference_fn=inference_fn, loss_fn=loss_fn)
 
     def predict (self, features):
         """Returns Q-value prediction based on input features."""
