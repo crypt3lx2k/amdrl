@@ -28,6 +28,7 @@ class Environment (object):
         raise NotImplementedError()
 
 class GymEnvironment (Environment):
+    """Wrapper for OpenAI gym environments."""
     def __init__ (self, gym_id):
         environment = gym.make(gym_id)
 
@@ -39,23 +40,24 @@ class GymEnvironment (Environment):
         self.gym_id = gym_id
         self.environment = environment
 
-    def batch (self, state):
+    def wrap (self, state):
         return np.stack([state])
 
     def copy (self):
         return type(self)(self.gym_id)
 
     def reset (self):
-        return self.batch(self.environment.reset())
+        return self.wrap(self.environment.reset())
 
     def step (self, action):
         state, reward, terminal, info = self.environment.step(action[0])
-        return map(self.batch, (state, reward, terminal))
+        return map(self.wrap, (state, reward, terminal))
 
     def render (self, close=False):
         return self.environment.render(close=close)
 
 class BatchEnvironment (Environment):
+    """Batching class that presents multiple identical environments as one."""
     def __init__ (self, environment, batch_size):
         super(BatchEnvironment, self).__init__ (
             state_shape=environment.state_shape,
