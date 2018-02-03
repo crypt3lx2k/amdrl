@@ -97,7 +97,8 @@ class TFModel (Model):
 
         # Set up session config if available
         self.config = self.params.get('config')
-        self.config = self.config is None or tf.ConfigProto(**self.config)
+        if self.config is not None:
+            self.config = tf.ConfigProto(**self.config)
 
         # Get cluster specification and launch server
         self.cluster = self.params.get('cluster')
