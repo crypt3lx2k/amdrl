@@ -23,11 +23,13 @@ optimizer_defaults = {
         learning_rate=0.001,
         rho=0.95,
         epsilon=1e-08,
+        use_locking=False,
     ),
 
     tf.train.AdagradOptimizer : dict (
         learning_rate=0.001,
         initial_accumulator_value=0.1,
+        use_locking=False,
     ),
 
     tf.train.AdamOptimizer : dict (
@@ -35,6 +37,7 @@ optimizer_defaults = {
         beta1=0.9,
         beta2=0.999,
         epsilon=1e-08,
+        use_locking=False,
     ),
 
     tf.train.FtrlOptimizer : dict (
@@ -44,15 +47,19 @@ optimizer_defaults = {
         l1_regularization_strength=0.0,
         l2_regularization_strength=0.0,
         l2_shrinkage_regularization_strength=0.0,
+        use_locking=False,
     ),
 
     tf.train.GradientDescentOptimizer : dict (
         learning_rate=0.001,
+        use_locking=False,
     ),
 
     tf.train.MomentumOptimizer : dict (
         learning_rate=0.001,
         momentum=0.9,
+        use_nesterov=False,
+        use_locking=False,
     ),
 
     tf.train.ProximalAdagradOptimizer : dict (
@@ -60,12 +67,14 @@ optimizer_defaults = {
         initial_accumulator_value=0.1,
         l1_regularization_strength=0.0,
         l2_regularization_strength=0.0,
+        use_locking=False,
     ),
 
     tf.train.ProximalGradientDescentOptimizer : dict (
         learning_rate=0.001,
         l1_regularization_strength=0.0,
         l2_regularization_strength=0.0,
+        use_locking=False,
     ),
 
     tf.train.RMSPropOptimizer : dict (
@@ -74,6 +83,7 @@ optimizer_defaults = {
         momentum=0.0,
         epsilon=1e-10,
         centered=False,
+        use_locking=False,
     ),
 }
 
