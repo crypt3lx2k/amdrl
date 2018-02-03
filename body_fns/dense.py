@@ -9,7 +9,7 @@ import tensorflow as tf
 
 __all__ = ['make_body_fn']
 
-def make_body_fn (hidden_units, dropout_rate):
+def make_body_fn (hidden_units, dropout_rate=None):
     """Makes a fully connected TF body model function."""
 
     def body_fn (features, training=False):
@@ -28,7 +28,7 @@ def make_body_fn (hidden_units, dropout_rate):
                 name='hidden_{}/dense_{}'.format(i, units)
             )
 
-            if training:
+            if training and dropout_rate:
                 net = tf.layers.dropout (
                     inputs=net,
                     rate=dropout_rate,
