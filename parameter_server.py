@@ -4,13 +4,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import configs_distributed
-import configs_tf
-
+import configs
 import tensorflow as tf
 
 def main (FLAGS):
-    cluster = configs_distributed.get_cluster(FLAGS)
+    cluster = configs.distributed.get_cluster(FLAGS)
     cluster = tf.train.ClusterSpec(cluster)
 
     if FLAGS.debug:
@@ -19,7 +17,7 @@ def main (FLAGS):
     server = tf.train.Server (
         cluster,
         job_name='ps',
-        config=configs_tf.session_configs['single_cpu'],
+        config=tf.ConfigProto(**configs.tf.session_configs['single_cpu']),
         task_index=FLAGS.task_index
     )
 
@@ -29,7 +27,7 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser = configs_distributed.add_argparse_args(parser)
+    parser = configs.distributed.add_argparse_args(parser)
 
     parser.add_argument (
         '--task_index', type=int, required=True,

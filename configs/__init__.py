@@ -6,6 +6,11 @@ from __future__ import print_function
 
 import collections
 
+from . import distributed
+from . import tf
+
+__all__ = ['DataConfig', 'distributed', 'tf']
+
 DataConfig = collections.namedtuple (
     'DataConfig',
     [

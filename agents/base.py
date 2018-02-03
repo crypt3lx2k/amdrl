@@ -22,7 +22,7 @@ class Agent (object):
 
     def perceive (self, rewards, terminals):
         self.memory.perceive(rewards, terminals)
-        self.update()
+        return self.update()
 
     def update (self):
         pass

@@ -78,7 +78,7 @@ class TFModel (Model):
     def build_server (self):
         if self.cluster is None:
             return tf.train.Server.create_local_server (
-                config=self.params.get('config')
+                config=self.config
             )
 
         self.cluster = tf.train.ClusterSpec(self.cluster)
@@ -86,7 +86,7 @@ class TFModel (Model):
             self.cluster,
             job_name='worker',
             task_index=self.params.get('task_index'),
-            config=self.params.get('config')
+            config=self.config
         )
 
     def build (self, input_fn, inference_fn, loss_fn):
@@ -94,6 +94,10 @@ class TFModel (Model):
         optimizer_fn, optimizer_params = train_fns.get_optimizer_fn(self.params)
         train_fn = train_fns.make_train_fn(optimizer_fn, optimizer_params)
         model_fn = model_fns.make_model_fn(inference_fn, loss_fn, train_fn)
+
+        # Set up session config if available
+        self.config = self.params.get('config')
+        self.config = self.config is None or tf.ConfigProto(**self.config)
 
         # Get cluster specification and launch server
         self.cluster = self.params.get('cluster')
@@ -139,7 +143,7 @@ class TFModel (Model):
                         master=self.server.target,
                         checkpoint_dir=self.params['model_dir'],
                         is_chief=self.params.get('is_chief'),
-                        config=self.params.get('config')
+                        config=self.config
                     )
 
         return self

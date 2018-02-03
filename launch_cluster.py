@@ -4,13 +4,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import configs_distributed
+import configs.distributed
 
 import subprocess
 import time
 
 def main (FLAGS, CHILD_FLAGS):
-    cluster = configs_distributed.get_cluster(FLAGS)
+    cluster = configs.distributed.get_cluster(FLAGS)
     processes = {'ps' : [], 'worker' : []}
 
     # Launch ps tasks
@@ -78,7 +78,7 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser = configs_distributed.add_argparse_args(parser)
+    parser = configs.distributed.add_argparse_args(parser)
 
     parser.add_argument (
         '--launch_delay', type=float, default=0.0,

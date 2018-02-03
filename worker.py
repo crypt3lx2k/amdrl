@@ -10,15 +10,28 @@ import numpy as np
 
 import agents
 import body_fns
+import configs
 import environments
 import policies
 import runners
 import memories
 import models
 
-import configs_distributed
-import configs_tf
-from configs import DataConfig
+def make_dist_params (FLAGS):
+    return dict (
+        cluster = configs.distributed.get_cluster_local(FLAGS),
+        task_index = FLAGS.task_index,
+        is_chief = FLAGS.task_index == 0,
+        config = configs.tf.session_configs['single_cpu']
+    )
+
+def make_local_params (FLAGS):
+    return dict (
+        cluster = None,
+        task_index = 0,
+        is_chief = True,
+        config = None
+    )
 
 def main (FLAGS):
     # Body fn parameters
@@ -28,56 +41,52 @@ def main (FLAGS):
     # Model parameters
     model_dir = '/tmp/cartpole/model'
     learning_rate = 1e-3
-    batch_size = 16
+    batch_size = 128
 
     # Distributed model parameters
-    cluster = None
-    task_index = 0
-    is_chief = True
-    session_config = None
-
-    if FLAGS.task_index is not None:
-        cluster = configs_distributed.get_cluster_local(FLAGS)
-        task_index = FLAGS.task_index
-        is_chief = task_index == 0
-        session_config = configs_tf.session_configs['single_cpu']
+    params_fn = make_local_params if FLAGS.task_index is None else make_dist_params
+    dist_params = params_fn(FLAGS)
 
     # Policy parameters
-    epsilon_start = 1.0
-    epsilon_stop = 0.05
-    epsilon_steps = 100000//2
+    total_steps = 50*200
 
-    total_steps = 2*epsilon_steps
+    epsilon_start = 1.0
+    epsilon_stop = 0.00
+    epsilon_steps = total_steps*0.95
 
     # Agent parameters
     gamma = 0.99
 
-    base_environment = environments.GymEnvironment('CartPole-v0')
     environment = environments.BatchEnvironment (
-        environment=base_environment,
+        environment=environments.GymEnvironment('CartPole-v0'),
         batch_size=batch_size
     )
 
     model = models.Q.Model (
-        input_config=DataConfig(dtype=np.float32, shape=environment.state_shape),
-        output_config=DataConfig(dtype=np.float32, shape=environment.action_shape),
-        action_config=DataConfig(dtype=np.int32, shape=()),
-        target_config=DataConfig(dtype=np.float32, shape=()),
+        # DataConfigs
+        input_config=configs.DataConfig(dtype=np.float32, shape=environment.state_shape),
+        output_config=configs.DataConfig(dtype=np.float32, shape=environment.action_shape),
+        action_config=configs.DataConfig(dtype=np.int32, shape=()),
+        target_config=configs.DataConfig(dtype=np.float32, shape=()),
+
+        # Q.Model inputs
         body_fn=body_fns.dense.make_body_fn(hidden_units, dropout_rate),
         loss_type='mean_squared_error',
+
+        # TF model inputs
         params=dict (
             # Tensorflow Model
             model_dir=model_dir,
-            
+
             # Tensorflow Optimizer
-            optimizer='GradientDescent',
+            optimizer='Adam',
             learning_rate=learning_rate,
 
             # Tensorflow Distributed
-            cluster=cluster,
-            task_index=task_index,
-            is_chief=is_chief,
-            config=session_config
+            cluster=dist_params['cluster'],
+            task_index=dist_params['task_index'],
+            is_chief=dist_params['is_chief'],
+            config=dist_params['config']
         )
     )
 
@@ -95,7 +104,7 @@ def main (FLAGS):
             if model.session.should_stop():
                 break
 
-            special_episode = is_chief and ((1+episodes) % 10 == 0)
+            special_episode = dist_params['is_chief'] and ((1+episodes) % 10 == 0)
 
             a = (epsilon_stop - epsilon_start)/epsilon_steps
             b = epsilon_start
@@ -121,7 +130,7 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser = configs_distributed.add_argparse_args(parser)
+    parser = configs.distributed.add_argparse_args(parser)
 
     parser.add_argument (
         '--task_index', type=int, default=None,
