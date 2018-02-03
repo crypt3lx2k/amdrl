@@ -24,7 +24,7 @@ class Environment (object):
     def step (self, actions):
         raise NotImplementedError()
 
-    def render (self):
+    def render (self, close=False):
         raise NotImplementedError()
 
 class GymEnvironment (Environment):
