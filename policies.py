@@ -14,19 +14,22 @@ class EpsilonGreedyPolicy (Policy):
         self.epsilon = epsilon
 
     def __call__ (self, predictions):
-        # random draw
+        # Random draw of all actions
         actions = np.random.choice (
             predictions.shape[-1],
             size=predictions.shape[0]
         )
 
-        # draw per state if action is greedy or not
+        # Draw per state if action is greedy or not
         random_draw = np.random.rand(actions.shape[0])
         greedy_actions = random_draw > self.epsilon
 
-        # run predictions on greedy states
+        # Select max-predictions on greedy states
         if greedy_actions.any():
-            actions[greedy_actions] = np.argmax(predictions[greedy_actions], axis=-1)
+            actions[greedy_actions] = np.argmax (
+                predictions[greedy_actions],
+                axis=-1
+            )
 
         return actions
 
