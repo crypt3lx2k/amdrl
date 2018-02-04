@@ -4,6 +4,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+# TODO:
+# Should transforms copy environments or just take ownership?
 import environments
 
 class Transform (environments.Environment):
@@ -61,7 +63,7 @@ class IdentityTransform (Transform):
     def terminal_transform (self, terminals):
         return terminals
 
-class ReshapeTransform (IdentityTransform):
+class StateReshapeTransform (IdentityTransform):
     def __init__ (self, environment, target_shape):
         super(ReshapeTransform, self).__init__ (
             environment=environment
