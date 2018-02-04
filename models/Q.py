@@ -34,16 +34,16 @@ def make_input_fn (input_config, target_config, action_config):
 
     return input_fn
 
-def make_inference_fn (body_fn, output_config):
-    """Makes full inference function based on body."""
+def make_inference_fn (net_fn, output_config):
+    """Makes full inference function based on net."""
 
     def inference_fn (features, training=False):
-        """Feeds correct input to body function and connects head."""
-        with tf.variable_scope('body'):
-            # Feed inputs through body
-            net = body_fn(features=features['states'], training=training)
+        """Feeds correct input to net function and connects head."""
+        with tf.variable_scope('net'):
+            # Feed inputs through net
+            net = net_fn(features=features['states'], training=training)
 
-            # Flatten body output
+            # Flatten net output
             net = tf.layers.flatten(net, name='flattened')
 
         # Output layer
@@ -106,7 +106,7 @@ class Model (base.TFModel):
             self,
             input_config, output_config,
             action_config, target_config,
-            body_fn, loss_type,
+            net_fn, loss_type,
             params
     ):
         # Setup super-class
@@ -122,7 +122,7 @@ class Model (base.TFModel):
 
         # Set up functions to pass to model function
         input_fn = make_input_fn(input_config, target_config, action_config)
-        inference_fn = make_inference_fn(body_fn, output_config)
+        inference_fn = make_inference_fn(net_fn, output_config)
         loss_fn = make_loss_fn(loss_terms[loss_type])
 
         # Build graph

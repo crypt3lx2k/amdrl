@@ -9,13 +9,13 @@ from six.moves import xrange
 import numpy as np
 
 import agents
-import body_fns
 import configs
 import environments
 import policies
 import runners
 import memories
 import models
+import net_fns
 
 def make_dist_params (FLAGS):
     return dict (
@@ -34,14 +34,14 @@ def make_local_params (FLAGS):
     )
 
 def main (FLAGS):
-    # Body fn parameters
+    # Net fn parameters
     hidden_units = [16]
     dropout_rate = 0.0
 
     # Model parameters
     model_dir = '/tmp/cartpole/model'
     learning_rate = 1e-3
-    batch_size = 128
+    batch_size = 8
 
     # Distributed model parameters
     params_fn = make_local_params if FLAGS.task_index is None else make_dist_params
@@ -70,7 +70,10 @@ def main (FLAGS):
         target_config=configs.DataConfig(dtype=np.float32, shape=()),
 
         # Q.Model inputs
-        body_fn=body_fns.dense.make_body_fn(hidden_units, dropout_rate),
+        net_fn=net_fns.make_net_fn([
+            dict(type='flatten', name='inputs/flattened'),
+            dict(type='dense', units=16, activation='tanh', name='hidden_0/dense_16'),
+        ]),
         loss_type='mean_squared_error',
 
         # TF model inputs
