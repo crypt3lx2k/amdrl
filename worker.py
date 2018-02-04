@@ -41,7 +41,7 @@ def main (FLAGS):
     # Model parameters
     model_dir = '/tmp/cartpole/model'
     learning_rate = 1e-3
-    batch_size = 8
+    batch_size = 64
 
     # Distributed model parameters
     params_fn = make_local_params if FLAGS.task_index is None else make_dist_params
@@ -62,6 +62,10 @@ def main (FLAGS):
         batch_size=batch_size
     )
 
+    net_params = net_fns.dense.make_net_params (
+        hidden_units, dropout_rate=dropout_rate, activation='tanh'
+    )
+
     model = models.Q.Model (
         # DataConfigs
         input_config=configs.DataConfig(dtype=np.float32, shape=environment.state_shape),
@@ -70,10 +74,7 @@ def main (FLAGS):
         target_config=configs.DataConfig(dtype=np.float32, shape=()),
 
         # Q.Model inputs
-        net_fn=net_fns.make_net_fn([
-            dict(type='flatten', name='inputs/flattened'),
-            dict(type='dense', units=16, activation='tanh', name='hidden_0/dense_16'),
-        ]),
+        net_fn=net_fns.make_net_fn(net_params=net_params),
         loss_type='mean_squared_error',
 
         # TF model inputs

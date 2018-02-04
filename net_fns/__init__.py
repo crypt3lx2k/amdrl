@@ -5,6 +5,9 @@ from __future__ import division
 from __future__ import print_function
 
 from . import layer_fns
+from . import dense
+
+__all__ = ['make_net_fn', 'dense']
 
 def make_net_fn (net_params):
     """Makes a net function based on full specification."""

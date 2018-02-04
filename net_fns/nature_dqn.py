@@ -27,4 +27,3 @@ net_params = [
     dict(type='flatten'),
     dict(type='dense', units=256, activation='relu', name='hidden_3/dense_256_relu')
 ]
-
