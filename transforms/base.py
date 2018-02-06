@@ -4,8 +4,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-# TODO:
-# Should transforms copy environments or just take ownership?
 import environments
 
 class Transform (environments.Environment):
@@ -21,6 +19,8 @@ class Transform (environments.Environment):
         return type(self)(self.environment)
 
     def reset (self):
+        self.reset_transform()
+
         return self.state_transform (
             self.environment.reset()
         )
@@ -38,6 +38,9 @@ class Transform (environments.Environment):
     def render (self, close=False):
         return self.environment.render(close=close)
 
+    def reset_transform (self):
+        raise NotImplementedError()
+
     def action_transform (self, actions):
         raise NotImplementedError()
 
@@ -51,6 +54,9 @@ class Transform (environments.Environment):
         raise NotImplementedError()
 
 class IdentityTransform (Transform):
+    def reset_transform (self):
+        pass
+
     def action_transform (self, actions):
         return actions
 
@@ -65,7 +71,7 @@ class IdentityTransform (Transform):
 
 class StateReshapeTransform (IdentityTransform):
     def __init__ (self, environment, target_shape):
-        super(ReshapeTransform, self).__init__ (
+        super(StateReshapeTransform, self).__init__ (
             environment=environment
         )
 

@@ -6,8 +6,9 @@ from __future__ import print_function
 
 from . import layer_fns
 from . import dense
+from . import dqn_nature
 
-__all__ = ['make_net_fn', 'dense']
+__all__ = ['make_net_fn', 'dense', 'dqn_nature']
 
 def make_net_fn (net_params):
     """Makes a net function based on full specification."""

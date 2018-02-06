@@ -29,7 +29,7 @@ class Runner (object):
             terminal |= terminals
             sub_episodes += sum(terminals)
 
-            self.agent.perceive(rewards, terminals)
+            loss = self.agent.perceive(rewards, terminals)
 
             if render:
                 self.environment.render()

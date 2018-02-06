@@ -16,6 +16,7 @@ import runners
 import memories
 import models
 import net_fns
+import transforms
 
 def make_dist_params (FLAGS):
     return dict (
@@ -41,7 +42,7 @@ def main (FLAGS):
     # Model parameters
     model_dir = '/tmp/cartpole/model'
     learning_rate = 1e-3
-    batch_size = 64
+    batch_size = 32
 
     # Distributed model parameters
     params_fn = make_local_params if FLAGS.task_index is None else make_dist_params
@@ -57,14 +58,35 @@ def main (FLAGS):
     # Agent parameters
     gamma = 0.99
 
-    environment = environments.BatchEnvironment (
-        environment=environments.GymEnvironment('CartPole-v0'),
-        batch_size=batch_size
-    )
+    environment = environments.GymEnvironment('Pong-v0')
+    environment = transforms.image.StateImageResizeTransform(environment, (84, 84, 3))
+    environment = transforms.image.StateLuminanceTransform(environment)
+    environment = transforms.image.StateImageStackTransform(environment, num_stacked_frames=4)
+    environment = environments.BatchEnvironment(environment, batch_size=batch_size)
 
-    net_params = net_fns.dense.make_net_params (
-        hidden_units, dropout_rate=dropout_rate, activation='tanh'
-    )
+    net_params = [
+        # First conv layer
+        dict (
+            type='conv2d', filters=16, kernel_size=(9, 9), strides=(4, 4), activation='relu',
+            name='hidden_0/conv_16_9x9_4x4_relu'
+        ),
+
+        # Second conv layer
+        dict (
+            type='conv2d', filters=32, kernel_size=(7, 7), strides=(2, 2), activation='relu',
+            name='hidden_1/conv_32_7x7_2x2_relu'
+        ),
+
+        # Third conv layer
+        dict (
+            type='conv2d', filters=64, kernel_size=(5, 5), strides=(2, 2), activation='relu',
+            name='hidden_2/conv_64_5x5_2x2_relu'
+        ),
+
+        # Fully connected layer
+        dict(type='flatten', name='hidden_3/flattened'),
+        dict(type='dense', units=128, activation='relu', name='hidden_3/dense_256_relu')
+    ]
 
     model = models.Q.Model (
         # DataConfigs
@@ -117,7 +139,7 @@ def main (FLAGS):
             if agent.policy.epsilon < epsilon_stop:
                 agent.policy.epsilon = epsilon_stop
 
-            sub_episodes, rewards = runner.run_episode(render=special_episode, render_delay=1.0/60)
+            sub_episodes, rewards = runner.run_episode(render=special_episode, render_delay=None)
             rewards = rewards.mean(axis=-1)
             reward = rewards.sum()
 
